@@ -1,0 +1,77 @@
+/* Increasing specificity */
+html body .container-fluid.margetop {
+    margin-top: 60px !important; /* Using !important to ensure it overrides any other styles */
+}
+
+
+/* Style CSS pour la barre de recherche */
+.panel-primary {
+    background-color: #f2f2f2; /* Couleur de fond gris clair */
+    border-color: blueviolet; /* Couleur de la bordure bleue */
+}
+
+.panel-heading {
+    background-color: #337ab7; /* Couleur de fond bleue pour l'en-tête */
+    color: #fff; /* Couleur du texte blanc */
+    border-color: #337ab7; /* Couleur de la bordure bleue */
+}
+
+.form-control {
+    border-radius: 20px; /* Bordure arrondie */
+}
+
+/* Style CSS pour le lien "Ajouter Filière" */
+.add-filiere {
+    color: #fff; /* Couleur du texte blanc */
+    background-color: #5cb85c; /* Couleur de fond vert */
+    padding: 8px 16px; /* Espacement interne */
+    border-radius: 20px; /* Bordure arrondie */
+    text-decoration: none; /* Pas de soulignement */
+}
+
+.add-filiere:hover {
+    background-color: #4cae4c; /* Changement de couleur au survol */
+}
+
+/* Style CSS pour l'icône de recherche */
+.glyphicon-search {
+    color: #fff; /* Couleur de l'icône blanche */
+    margin-right: 5px; /* Marge à droite */
+}
+
+.glyphicon-plus {
+    margin-right: 5px; /* Marge à droite */
+}
+
+
+/* Custom styles for smaller and more controlled form elements */
+.form-control-smaller {
+    padding: .375rem .75rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
+
+.custom-width {
+    width: auto; /* Adjust this to control the width or use Bootstrap utility classes like w-50 */
+}
+
+.margetop{
+
+    margin-top :60px;
+}
+
+.card.border-primary {
+        border-color: #337ab7 !important; /* Couleur bleue de la barre de navigation */
+        border-width: 1px !important; /* Réduit l'épaisseur de la bordure */
+    }
+
+    .card-header.bg-primary {
+        background-color: #337ab7 !important; /* Couleur bleue pour le fond des en-têtes */
+        color: #fff; /* Garde le texte blanc pour une bonne lisibilité */
+    }
+
+    #color {
+         background-color: #337ab7 !important; /* Couleur bleue pour le fond des en-têtes */
+        color: #fff; /* Garde le texte blanc pour une bonne lisibilité */
+    }

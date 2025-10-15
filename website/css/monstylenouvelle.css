@@ -1,0 +1,38 @@
+.container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    /* Style CSS pour le panneau */
+    .panel {
+        width: 400px; /* Largeur du panneau */
+        border: 1px solid #ccc; /* Bordure grise */
+        border-radius: 10px; /* Bordure arrondie */
+        padding: 20px; /* Espacement interne */
+    }
+
+    /* Style CSS pour les champs de saisie */
+    .form-control {
+        border: 1px solid #ccc; /* Bordure grise */
+        border-radius: 5px; /* Bordure arrondie */
+        padding: 10px; /* Espacement interne */
+        width: 100%; /* Largeur à 100% */
+        margin-bottom: 10px; /* Marge inférieure */
+    }
+
+    /* Style CSS pour le bouton */
+    .btn-primary {
+        background-color: #007bff; /* Couleur de fond bleue */
+        color: #fff; /* Couleur du texte blanc */
+        border: none; /* Pas de bordure */
+        border-radius: 5px; /* Bordure arrondie */
+        padding: 10px 20px; /* Espacement interne */
+        cursor: pointer; /* Curseur pointeur */
+    }
+
+    /* Style CSS pour le bouton au survol */
+    .btn-primary:hover {
+        background-color: #0056b3; /* Changement de couleur au survol */
+    }

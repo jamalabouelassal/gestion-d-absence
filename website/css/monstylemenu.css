@@ -1,0 +1,30 @@
+
+    /* Style personnalisé pour la barre de navigation */
+    .navbar-inverse {
+        background-color: #000; /* Couleur de fond noire */
+        border-color: #000; /* Couleur de la bordure noire */
+    }
+
+    .navbar-inverse .navbar-brand {
+        color: #00f; /* Couleur du texte de la marque */
+    }
+
+    .navbar-inverse .navbar-brand:hover,
+    .navbar-inverse .navbar-brand:focus {
+        color: #00f; /* Couleur du texte de la marque au survol/focus */
+    }
+
+    .navbar-inverse .navbar-nav > li > a {
+        color: #fff; /* Couleur du texte des éléments de menu */
+    }
+
+    .navbar-inverse .navbar-nav > li > a:hover,
+    .navbar-inverse .navbar-nav > li > a:focus {
+        background-color: #00f; /* Couleur de fond des éléments de menu au survol/focus */
+    }
+
+    .navbar-inverse .navbar-nav > .active > a,
+    .navbar-inverse .navbar-nav > .active > a:hover,
+    .navbar-inverse .navbar-nav > .active > a:focus {
+        background-color: #00f; /* Couleur de fond des éléments de menu actifs */
+    }
