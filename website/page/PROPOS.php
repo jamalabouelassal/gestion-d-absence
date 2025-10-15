@@ -1,0 +1,353 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['user'])) {
+    header('location:login.php');
+    exit();
+}
+
+require_once('connection_db.php');
+
+// Fetch attendance records from the attendancee table
+$query = "SELECT code, matiere, nom, prenom, date, heure, statut, niveau FROM attendancee";
+
+try {
+    $stmt = $pdo->prepare($query);
+    $stmt->execute();
+    $attendance_records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo 'PDOException: ' . $e->getMessage();
+    exit;
+}
+
+// Separate records into 'absent' and 'present'
+$absent_records = array_filter($attendance_records, function($record) {
+    return strtolower($record['statut']) === 'absent';
+});
+$present_records = array_filter($attendance_records, function($record) {
+    return strtolower($record['statut']) === 'present';
+});
+?>
+
+<!DOCTYPE HTML>
+<HTML>
+<head>
+    <meta charset="utf-8"> 
+    <title>Reconnaissance faciale </title>
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/monstyle.css">
+    <!-- jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+               .scroll-table {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .table thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 1;
+        }
+        .alert-btn {
+            white-space: nowrap;
+        }
+        
+        .title{
+background-color: rgb(17,173,218);
+background: linear-gradient(90deg, rgba(17,173,218,1) 0%, rgba(30,104,180,1) 77%, rgba(0,237,255,1) 100%);width:fit-content;color:white;padding:10px;font-size:25px
+        }
+ 
+
+.filter-input {
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.filter-input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.filter-input::placeholder {
+    color: #6c757d;
+}
+
+.filter-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+/* Custom CSS pour le bouton */
+.custom-btn {
+    font-size: 18px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+/* Changement de couleur au survol */
+.custom-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Changement de couleur au clic */
+.custom-btn:active {
+    background-color: #004494;
+    transform: scale(1.02);
+}
+
+
+    </style>
+</head>
+<body>
+    <?php include("menu.php"); ?>
+
+    <div class="container mt-3">
+    <div class="text-center pt-5 my-4 p-2 d-flex justify-content-center align-items-center">
+        <h2 class="mb-4 p-2 text-white px-5 rounded bg-dark">Attendance Records</h2></div>
+        <div class="row mb-3 g-3">
+            <div class="col-md-2">
+                <input type="text" id="codeFilter" class="form-control filter-input" placeholder="Code">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="nameFilter" class="form-control filter-input" placeholder="Name">
+            </div>
+            <div class="col-md-2">
+                <input type="date" id="dateFilter" class="form-control filter-input">
+            </div>
+            <div class="col-md-2">
+                <input type="time" id="heureFilter" class="form-control filter-input">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="niveauFilter" class="form-control filter-input" placeholder="Niveau">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="matiereFilter" class="form-control filter-input" placeholder="Matiere">
+            </div>
+        </div>
+
+        <!-- Print Button -->
+        <div class="container mt-5">
+        <div class="row mb-3">
+            <div class="col-md-12 text-end">
+                <button class="btn btn-danger  text-white custom-btn" onclick="printContent()"> <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-printer me-2" viewBox="0 0 16 16">
+  <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+  <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+</svg>Print Records</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Absent Table -->
+        <div class="text-center p-2 d-flex justify-content-center align-items-center ">
+        <h3 class="mt-4 title rounded px-5">Absent Records</h3></div>
+        <div class="row">
+            <div class="scroll-table">
+                <table class="table  table-striped" id="absentTable">
+                    <thead>
+                    <tr>
+                            <th class="bg-primary text-white">Code</th>
+                            <th class="bg-primary text-white">Matiere</th>
+                            <th class="bg-primary text-white">Nom</th>
+                            <th class="bg-primary text-white">Prenom</th>
+                            <th class="bg-primary text-white">Date</th>
+                            <th class="bg-primary text-white">Heure</th>
+                            <th class="bg-primary text-white">Statut</th>
+                            <th class="bg-primary text-white">Niveau</th>
+                            <th class="bg-primary text-white">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="absentBody">
+                    <tbody id="absentBody">
+                        <?php if ($absent_records): ?>
+                            <?php foreach ($absent_records as $record): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($record['code']) ?></td>
+                                    <td><?= htmlspecialchars($record['matiere']) ?></td>
+                                    <td><?= htmlspecialchars($record['nom']) ?></td>
+                                    <td><?= htmlspecialchars($record['prenom']) ?></td>
+                                    <td><?= htmlspecialchars($record['date']) ?></td>
+                                    <td><?= htmlspecialchars($record['heure']) ?></td>
+                                    <td><?= htmlspecialchars($record['statut']) ?></td>
+                                    <td><?= htmlspecialchars($record['niveau']) ?></td>
+                                    <td>
+                                        <button class="btn btn-warning alert-btn" data-code="<?= htmlspecialchars($record['code']) ?>" data-name="<?= htmlspecialchars($record['nom']) ?> <?= htmlspecialchars($record['prenom']) ?>">Send Alert</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="9">No absent records found.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Present Table -->
+        <div class="text-center p-2 d-flex justify-content-center align-items-center">
+        <h3 class="mt-4 px-5 py-2 rounded title text-white ">Present Records</h3></div>
+        <div class="row">
+            <div class="scroll-table">
+                <table class="table table-striped" id="presentTable">
+                    <thead>
+                        <tr>
+                            <th class="bg-primary text-white" >Code</th>
+                            <th class="bg-primary text-white">Matiere</th>
+                            <th class="bg-primary text-white" >Nom</th>
+                            <th class="bg-primary text-white">Prenom</th>
+                            <th class="bg-primary text-white">Date</th>
+                            <th class="bg-primary text-white">Heure</th>
+                            <th class="bg-primary text-white">Statut</th>
+                            <th class="bg-primary text-white">Niveau</th>
+                        </tr>
+                    </thead>
+                    <tbody id="presentBody">
+                        <?php if ($present_records): ?>
+                            <?php foreach ($present_records as $record): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($record['code']) ?></td>
+                                    <td><?= htmlspecialchars($record['matiere']) ?></td>
+                                    <td><?= htmlspecialchars($record['nom']) ?></td>
+                                    <td><?= htmlspecialchars($record['prenom']) ?></td>
+                                    <td><?= htmlspecialchars($record['date']) ?></td>
+                                    <td><?= htmlspecialchars($record['heure']) ?></td>
+                                    <td><?= htmlspecialchars($record['statut']) ?></td>
+                                    <td><?= htmlspecialchars($record['niveau']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="8">No present records found.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alertModalLabel">Send Alert</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="alertForm">
+                        <div class="form-group">
+                            <label for="message">Message:</label>
+                            <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                        </div>
+                        <input type="hidden" id="alertCode" name="code">
+                        <button type="submit" class="btn btn-primary mt-3">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+ function printContent() {
+    // Cloner les tables
+    var absentTable = document.getElementById('absentTable').cloneNode(true);
+    var presentTable = document.getElementById('presentTable').cloneNode(true);
+    
+    // Supprimer la colonne des actions uniquement pour les tableaux d'absence
+    var absentHeader = absentTable.querySelector('thead tr');
+    var absentRows = absentTable.querySelectorAll('tbody tr');
+
+    absentHeader.removeChild(absentHeader.lastElementChild);
+    absentRows.forEach(function(row) {
+        row.removeChild(row.lastElementChild);
+    });
+
+    // Ouvrir une nouvelle fenêtre pour l'impression
+    var printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Print</title>');
+    printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">');
+    printWindow.document.write('</head><body >');
+    printWindow.document.write(absentTable.outerHTML);
+    printWindow.document.write(presentTable.outerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+
+        $(document).ready(function() {
+            $("#codeFilter, #nameFilter, #dateFilter, #heureFilter, #niveauFilter, #matiereFilter").on("keyup change", function() {
+                var codeVal = $("#codeFilter").val().toLowerCase();
+                var nameVal = $("#nameFilter").val().toLowerCase();
+                var dateVal = $("#dateFilter").val();
+                var heureVal = $("#heureFilter").val();
+                var niveauVal = $("#niveauFilter").val().toLowerCase();
+                var matiereVal = $("#matiereFilter").val().toLowerCase();
+
+                // Filter the absent table
+                $("#absentBody tr").filter(function() {
+                    $(this).toggle(
+                        $(this).find("td:eq(0)").text().toLowerCase().indexOf(codeVal) > -1 &&
+                        ($(this).find("td:eq(2)").text().toLowerCase().indexOf(nameVal) > -1 || $(this).find("td:eq(3)").text().toLowerCase().indexOf(nameVal) > -1) &&
+                        ($(this).find("td:eq(4)").text() === dateVal || dateVal === "") &&
+                        ($(this).find("td:eq(5)").text() === heureVal || heureVal === "") &&
+                        $(this).find("td:eq(7)").text().toLowerCase().indexOf(niveauVal) > -1 &&
+                        $(this).find("td:eq(1)").text().toLowerCase().indexOf(matiereVal) > -1
+                    );
+                });
+
+                // Filter the present table
+                $("#presentBody tr").filter(function() {
+                    $(this).toggle(
+                        $(this).find("td:eq(0)").text().toLowerCase().indexOf(codeVal) > -1 &&
+                        ($(this).find("td:eq(2)").text().toLowerCase().indexOf(nameVal) > -1 || $(this).find("td:eq(3)").text().toLowerCase().indexOf(nameVal) > -1) &&
+                        ($(this).find("td:eq(4)").text() === dateVal || dateVal === "") &&
+                        ($(this).find("td:eq(5)").text() === heureVal || heureVal === "") &&
+                        $(this).find("td:eq(7)").text().toLowerCase().indexOf(niveauVal) > -1 &&
+                        $(this).find("td:eq(1)").text().toLowerCase().indexOf(matiereVal) > -1
+                    );
+                });
+            });
+
+            // Handle alert button click
+            $(document).on('click', '.alert-btn', function() {
+                var code = $(this).data('code');
+                var name = $(this).data('name');
+                $('#alertCode').val(code);
+                $('#alertModal').modal('show');
+            });
+
+            // Handle form submission for sending alert
+            $('#alertForm').on('submit', function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'send_alert.php',
+                    data: formData,
+                    success: function(response) {
+                        var result = JSON.parse(response);
+                        if (result.success) {
+                            alert(result.success);
+                            $('#alertModal').modal('hide');
+                        } else {
+                            alert(result.error);
+                        }
+                    },
+                    error: function() {
+                        alert('Erreur lors de l\'envoi du message.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</HTML>
